@@ -67,8 +67,23 @@ func getHabitByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func addHabit(w http.ResponseWriter, r *http.Request) {
+	var newHabit Habit
+	json.NewDecoder(r.Body).Decode(&newHabit)
+	newHabit.StartDate = time.Now()
+	habits = append(habits, newHabit)
+}
+
 func main() {
-	http.HandleFunc("/habits", getHabits)
+	http.HandleFunc("/habits", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			getHabits(w, r)
+		} else if r.Method == http.MethodPost {
+			addHabit(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 	http.HandleFunc("/habits/", getHabitByID)
 	log.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
