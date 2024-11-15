@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -37,11 +38,11 @@ var habits = []Habit{
 }
 
 var entries = []TrackingEntry{
-	{ID: "123", HabitID: "abc", Timestamp: parseTime("2024-11-01T15:00:00Z"), Note: "Went running."},
-	{ID: "456", HabitID: "abc", Timestamp: parseTime("2024-13-01T09:00:00Z"), Note: "Went to the gym."},
-	{ID: "789", HabitID: "abc", Timestamp: parseTime("2024-15-01T16:00:00Z"), Note: "Did some yoga."},
-	{ID: "234", HabitID: "def", Timestamp: parseTime("2024-12-01T21:00:00Z"), Note: "Read one chapter."},
-	{ID: "567", HabitID: "def", Timestamp: parseTime("2024-13-01T21:00:00Z"), Note: "Read two chapters."},
+	{ID: "123", HabitID: "abc", Timestamp: parseTime("2024-11-02T15:00:00Z"), Note: "Went running."},
+	{ID: "456", HabitID: "abc", Timestamp: parseTime("2024-11-05T09:00:00Z"), Note: "Went to the gym."},
+	{ID: "789", HabitID: "abc", Timestamp: parseTime("2024-11-10T16:00:00Z"), Note: "Did some yoga."},
+	{ID: "234", HabitID: "def", Timestamp: parseTime("2024-11-13T21:00:00Z"), Note: "Read one chapter."},
+	{ID: "567", HabitID: "def", Timestamp: parseTime("2024-11-15T21:00:00Z"), Note: "Read two chapters."},
 }
 
 func getHabits(w http.ResponseWriter, r *http.Request) {
@@ -49,8 +50,26 @@ func getHabits(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(habits)
 }
 
+func getHabitByID(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 3 || pathParts[2] == "" {
+		http.Error(w, "Invalid habit ID", http.StatusBadRequest)
+		return
+	}
+	id := pathParts[2]
+
+	for _, habit := range habits {
+		if habit.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(habit)
+			return
+		}
+	}
+}
+
 func main() {
 	http.HandleFunc("/habits", getHabits)
+	http.HandleFunc("/habits/", getHabitByID)
 	log.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
