@@ -142,6 +142,45 @@ func deleteHabit(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Habit not found", http.StatusNotFound)
 }
 
+func addTrackingEntry(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 || pathParts[2] == "" || pathParts[3] != "tracking" {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+	habitID := pathParts[2]
+
+	var habitExists bool
+	for _, habit := range habits {
+		if habit.ID == habitID {
+			habitExists = true
+			break
+		}
+	}
+	if !habitExists {
+		http.Error(w, "Habit not found", http.StatusNotFound)
+		return
+	}
+
+	var entry TrackingEntry
+	if err := json.NewDecoder(r.Body).Decode(&entry); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	entry.ID = uuid.New().String()
+	entry.HabitID = habitID
+	if entry.Timestamp.IsZero() {
+		entry.Timestamp = time.Now()
+	}
+
+	entries = append(entries, entry)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(entry)
+}
+
 func main() {
 	http.HandleFunc("/habits", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -155,6 +194,11 @@ func main() {
 	})
 
 	http.HandleFunc("/habits/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/tracking") && r.Method == http.MethodPost {
+			addTrackingEntry(w, r)
+			return
+		}
+
 		switch r.Method {
 		case http.MethodGet:
 			getHabitByID(w, r)

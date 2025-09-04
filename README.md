@@ -43,6 +43,13 @@ DELETE /habits/{id} : Delete a specific habit.
 curl -X DELETE http://localhost:8080/habits/abc
 ```
 
+POST /habits/{id}/tracking : Add a new tracking for a specific habit.
+```bash
+curl  -X POST http://localhost:8080/habits/abc/tracking \
+      -H "Content-Type: application/json" \
+      -d '{"note":"Went for a long walk"}'
+```
+
 ---
 
 ## Dependencies
