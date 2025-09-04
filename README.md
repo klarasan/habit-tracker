@@ -26,10 +26,19 @@ curl http://localhost:8080/habits/abc
 
 POST /habits : Add a new habit.
 ```bash
-curl    -X POST http://localhost:8080/habits \
-        -H "Content-Type: application/json" \
-        -d '{"name":"Meditate","description":"Daily meditation","frequency":"Daily"}'
+curl  -X POST http://localhost:8080/habits \
+      -H "Content-Type: application/json" \
+      -d '{"name":"Meditate","description":"Daily meditation","frequency":"Daily"}'
 ```
+
+PATCH /habits/{id} : Update information for a specific habit.
+```bash
+curl  -X PATCH http://localhost:8080/habits/abc \
+      -H "Content-Type: application/json" \
+      -d '{"name":"Daily Exercise","frequency":"4 times weekly"}'
+```
+
+---
 
 ## Dependencies
 

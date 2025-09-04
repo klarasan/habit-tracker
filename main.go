@@ -88,17 +88,52 @@ func addHabit(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newHabit)
 }
 
+func updateHabit(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 3 || pathParts[2] == "" {
+		http.Error(w, "Invalid habit ID", http.StatusBadRequest)
+		return
+	}
+	id := pathParts[2]
+
+	var updates map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	for i, habit := range habits {
+		if habit.ID == id {
+			if name, ok := updates["name"]; ok {
+				habits[i].Name = name
+			}
+			if desc, ok := updates["description"]; ok {
+				habits[i].Description = desc
+			}
+			if freq, ok := updates["frequency"]; ok {
+				habits[i].Frequency = freq
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(habits[i])
+			return
+		}
+	}
+
+	http.Error(w, "Habit not found", http.StatusNotFound)
+}
+
 func main() {
-	http.HandleFunc("/habits", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			getHabits(w, r)
-		} else if r.Method == http.MethodPost {
-			addHabit(w, r)
-		} else {
+	http.HandleFunc("/habits/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getHabitByID(w, r)
+		case http.MethodPatch:
+			updateHabit(w, r)
+		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	http.HandleFunc("/habits/", getHabitByID)
 	log.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
