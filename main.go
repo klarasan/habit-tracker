@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func parseTime(value string) time.Time {
@@ -79,6 +81,7 @@ func addHabit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newHabit.StartDate = time.Now()
+	newHabit.ID = uuid.New().String()
 	habits = append(habits, newHabit)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

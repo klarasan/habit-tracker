@@ -28,5 +28,17 @@ POST /habits : Add a new habit.
 ```bash
 curl    -X POST http://localhost:8080/habits \
         -H "Content-Type: application/json" \
-        -d '{"id":"xyz","name":"Meditate","description":"Daily meditation","frequency":"Daily"}'
+        -d '{"name":"Meditate","description":"Daily meditation","frequency":"Daily"}'
 ```
+
+## Dependencies
+
+This project uses Go modules.
+
+External dependency:
+- [github.com/google/uuid](https://pkg.go.dev/github.com/google/uuid) — for generating unique IDs.
+
+When cloning the project, run:
+
+```bash
+go mod tidy
