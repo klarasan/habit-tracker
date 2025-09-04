@@ -38,6 +38,11 @@ curl  -X PATCH http://localhost:8080/habits/abc \
       -d '{"name":"Daily Exercise","frequency":"4 times weekly"}'
 ```
 
+DELETE /habits/{id} : Delete a specific habit.
+```bash
+curl -X DELETE http://localhost:8080/habits/abc
+```
+
 ---
 
 ## Dependencies

@@ -123,6 +123,25 @@ func updateHabit(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Habit not found", http.StatusNotFound)
 }
 
+func deleteHabit(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 3 || pathParts[2] == "" {
+		http.Error(w, "Invalid habit ID", http.StatusBadRequest)
+		return
+	}
+	id := pathParts[2]
+
+	for i, habit := range habits {
+		if habit.ID == id {
+			habits = append(habits[:i], habits[i+1:]...)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
+	http.Error(w, "Habit not found", http.StatusNotFound)
+}
+
 func main() {
 	http.HandleFunc("/habits", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -141,6 +160,8 @@ func main() {
 			getHabitByID(w, r)
 		case http.MethodPatch:
 			updateHabit(w, r)
+		case http.MethodDelete:
+			deleteHabit(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
