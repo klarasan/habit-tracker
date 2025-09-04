@@ -58,20 +58,31 @@ func getHabitByID(w http.ResponseWriter, r *http.Request) {
 	}
 	id := pathParts[2]
 
+	ok := false
 	for _, habit := range habits {
 		if habit.ID == id {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(habit)
+			ok = true
 			return
 		}
+	}
+	if !ok {
+		http.Error(w, "Habit not found", http.StatusNotFound)
 	}
 }
 
 func addHabit(w http.ResponseWriter, r *http.Request) {
 	var newHabit Habit
-	json.NewDecoder(r.Body).Decode(&newHabit)
+	if err := json.NewDecoder(r.Body).Decode(&newHabit); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
 	newHabit.StartDate = time.Now()
 	habits = append(habits, newHabit)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(newHabit)
 }
 
 func main() {
