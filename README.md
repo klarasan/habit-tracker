@@ -50,6 +50,11 @@ curl  -X POST http://localhost:8080/habits/abc/tracking \
       -d '{"note":"Went for a long walk"}'
 ```
 
+GET /habits/{id}/tracking : Retrieve all trackings for a specific habit.
+```bash
+curl http://localhost:8080/habits/abc/tracking
+```
+
 ---
 
 ## Dependencies

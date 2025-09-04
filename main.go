@@ -181,6 +181,37 @@ func addTrackingEntry(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(entry)
 }
 
+func getTrackingEntries(w http.ResponseWriter, r *http.Request) {
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 || pathParts[2] == "" || pathParts[3] != "tracking" {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+	habitID := pathParts[2]
+
+	var habitExists bool
+	for _, habit := range habits {
+		if habit.ID == habitID {
+			habitExists = true
+			break
+		}
+	}
+	if !habitExists {
+		http.Error(w, "Habit not found", http.StatusNotFound)
+		return
+	}
+
+	var habitEntries []TrackingEntry
+	for _, entry := range entries {
+		if entry.HabitID == habitID {
+			habitEntries = append(habitEntries, entry)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(habitEntries)
+}
+
 func main() {
 	http.HandleFunc("/habits", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -194,8 +225,15 @@ func main() {
 	})
 
 	http.HandleFunc("/habits/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/tracking") && r.Method == http.MethodPost {
-			addTrackingEntry(w, r)
+		if strings.HasSuffix(r.URL.Path, "/tracking") {
+			switch r.Method {
+			case http.MethodPost:
+				addTrackingEntry(w, r)
+			case http.MethodGet:
+				getTrackingEntries(w, r)
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
 			return
 		}
 
